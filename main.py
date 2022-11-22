@@ -1,10 +1,8 @@
 from preprocess import *
 import pandas as pd
 
-#open
 df = pd.read_csv('FAOSTAT_data_1961_2019.csv')
 cleaned_df = clean_FAOSTAT(df)
-print(cleaned_df.head())
 
 #create an emission activity and emission type list. Each value is a tuple, 0th -> activity, 1st -> type of emission
 emission_activity_and_type = list(cleaned_df.groupby(['Activity','Element']).indices.keys())
@@ -26,10 +24,19 @@ CO2_df = create_emissions_frame(['Activity', 'Element'], CO2_df)
 CH4_df = create_emissions_frame(['Activity', 'Element'], CH4_df)
 N2O_df = create_emissions_frame(['Activity', 'Element'], N2O_df)
 
-CO2_df = keep_agriculture_data(CO2_df)
-CH4_df = keep_agriculture_data(CH4_df)
-N2O_df = keep_agriculture_data(N2O_df)
+#drop highly correlated features
+CO2_df = drop_correlations(CO2_df)
+CH4_df = drop_correlations(CH4_df)
+N2O_df = drop_correlations(N2O_df)
 
-print("CO2 columns ", CO2_df.columns)
-print("CH4 columns ", CH4_df.columns)
-print("N2O columns ", N2O_df.columns)
+# #focus on agriculture
+# CO2_df = keep_agriculture_data(CO2_df)
+# CH4_df = keep_agriculture_data(CH4_df)
+# N2O_df = keep_agriculture_data(N2O_df)
+
+#the features that remain are not related to forests and fires but agrivulture
+#all features have a correlation less than abs(THRESHOLD_CORRELATION)
+CO2_df = remove_fire_data(CO2_df)
+CH4_df = remove_fire_data(CH4_df)
+N2O_df = remove_fire_data(N2O_df)
+do_random_prints_and_testing(CO2_df, CH4_df, N2O_df)
