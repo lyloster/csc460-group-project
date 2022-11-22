@@ -15,6 +15,18 @@ def clean_yield(df):
                                                 ,'WHEAT_TONNE_HA','WHEAT_THND_TONNE', 'WHEAT_THND_HA'
                                                 ,'MAIZE_TONNE_HA','MAIZE_THND_TONNE', 'MAIZE_THND_HA'
                                                 ,'SOYBEAN_TONNE_HA','SOYBEAN_THND_TONNE', 'SOYBEAN_THND_HA'])
+                                                
+    #My main issue was how to separate each measurment value. The original table had 2 colums: type of measurement , value.
+    #I wanted to separte each value type with its corresponding value and place them in their own column, this was so that we can make it easier
+    #to have each as a feature. Also that we can separte properly by year. The years are from 1990-2026. I chose not to drop the projection years(2022-2026)
+    #becuase they might be useful later on when building our model and compare them to the current projections. This will be decided later on if they are useful or not
+    #once the model is being built.
+    #There are 3 nested for loops and this could definitely have a better run time, but since this will only run once, and the dataset isnt too big, I decided this was 
+    #enough to justify this type of aproach.
+    #the code below creates a list of all the years in the dataset, then goes through the dataset looking for the year and manually saving the value for the type of
+    #crop and its measurement type. Then at the end of each year's loop, concat it to a new dataset that will be returned.
+    #this aproach creates all the new data in one big loop, instead of multiple seperate ones that fill in missing values.
+
     #Make a list of all unique years
     years=[]
     years=usa_temp['TIME'].unique()
