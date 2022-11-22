@@ -2,8 +2,12 @@
 THRESHOLD_MISSING = 5
 
 def clean_FAOSTAT(df):
+    #keep data only from FAO TIER 1 source, original data contains data for same year but from multiple sources
+    #both sources have similar measurements
+    #FAO TIER 1 is more complete than UNFCCC
+    cleaned_df = df[df["Source Code"] == 3050] #FAO TIER 1
     #drop numeric codes that do not apply
-    cleaned_df = df.drop(['Area Code', 'Item Code', 'Source Code', 'Source', 'Element Code'], axis=1)
+    cleaned_df = cleaned_df.drop(['Area Code', 'Item Code', 'Source Code', 'Source', 'Element Code'], axis=1)
     #extract columns belonging to the USA
     cleaned_df = cleaned_df[cleaned_df['Area'] == 'United States of America']
     #rename Items column to Activity
@@ -50,5 +54,5 @@ def keep_agriculture_data(df):
     for column in df:
         if "agricult" in str(column).lower() or "farm" in str(column).lower():
             columns_to_keep.append(str(column))
-    df = df[columns_to_keep]
-    return df
+    cleaned_df = df[columns_to_keep]
+    return cleaned_df
