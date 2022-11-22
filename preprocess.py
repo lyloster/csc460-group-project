@@ -1,3 +1,6 @@
+
+THRESHOLD_MISSING = 5
+
 def clean_FAOSTAT(df):
     #drop numeric codes that do not apply
     cleaned_df = df.drop(['Area Code', 'Item Code', 'Source Code', 'Source', 'Element Code'], axis=1)
@@ -14,6 +17,7 @@ def create_emissions_frame(columns, df):
     df['Emission'] = df[columns[0]].astype(str) + '_' + df[columns[1]]
     df.drop(columns, axis=1, inplace=True)
     df.insert(0,'Emission', df.pop('Emission'))
+    df = drop_year_no_data(df)
     df = df.set_index('Emission').transpose().fillna(0).reset_index()
     df['index'] = df['index'].str.lstrip('Y')
     return df.rename(columns={'index':'Year'}).set_index('Year')
@@ -26,17 +30,25 @@ def list_emissions(emission_name, emission_activity_and_type):
 def create_emission_df(df, emission_list):
     return df[df['Element'].isin([el[1] for el in emission_list])].drop(['Area', 'Unit'], axis=1).reset_index(drop=True)
 
-def clean_other_one():
-    pass
+#drop columns where more than THRESHOLD_MISSING % of data is missing
+def drop_year_no_data(df):
+    #df columns currently are Year 19XX/2XXX
+    for column in df:
+        #if there is too much data missing for a particular year, drop it
+        #initial check showed most data prior to 1990 is missing & is effectively being dropped
+        if check_percent_data_missing(df[column]) > THRESHOLD_MISSING:
+            df.drop(column, axis=1, inplace=True)
+    return df
 
-def combine():
-    pass
+#check % of data missing in each column
+def check_percent_data_missing(df):
+    return df.isnull().sum()/df.shape[0] * 100
 
-def visualize():
-    pass
-
-def convert_units():
-    pass
-
-def drop_na():
-    pass
+#a lot of data in set relates to emissions due to fires, keep emissions only related to agriculture
+def keep_agriculture_data(df):
+    columns_to_keep = []
+    for column in df:
+        if "agricult" in str(column).lower() or "farm" in str(column).lower():
+            columns_to_keep.append(str(column))
+    df = df[columns_to_keep]
+    return df
