@@ -3,7 +3,7 @@ Matheus Figueroa, Kristina Ilyovska, Danny Jaramillo
 
 Repo details:
 
-Folder: Data Sceince Project- (inital state) preprocessing of original data, code recommited to main processing: not in this folder.
+Folder: Data Science Project- (inital state) preprocessing of original data, code recommited to main processing: not in this folder.
 
 Group8_dataDict.xlsx- Data dictionary for all dataframes, each is in their respective sheet
 
