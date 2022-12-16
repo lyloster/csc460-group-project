@@ -1,7 +1,9 @@
-import matplotlib.pyplot as plt
 import numpy as np
 THRESHOLD_MISSING = 5
 THRESHOLD_CORRELATION = 0.90
+FACTOR = 1000
+MU = 0
+SIGMA = 0.1
 
 def clean_FAOSTAT(df):
     #keep data only from FAO TIER 1 source, original data contains data for same year but from multiple sources
@@ -67,13 +69,6 @@ def remove_fire_data(df):
             df.drop(column, axis=1, inplace=True)
     return df
 
-def visualize_column(column, label_y, title):
-    plt.plot(column.index, column)
-    plt.xlabel("Year")
-    plt.ylabel(label_y)
-    plt.title(title)
-    plt.show()
-
 def drop_correlations(df):
     # create correlation matrix
     corr_matrix = df.corr().abs()
@@ -84,13 +79,22 @@ def drop_correlations(df):
     df.drop(to_drop, axis=1, inplace=True)
     return df
 
-#random testing, add things here
-def do_random_prints_and_testing(CO2_df, CH4_df, N2O_df):
-    print("CO2 columns ", CO2_df.columns)
-    print("CH4 columns ", CH4_df.columns)
-    print("N2O columns ", N2O_df.columns)
-    print(CO2_df.loc[CO2_df.index[0]])
-    print(CH4_df.loc[CH4_df.index[0]])
-    print(N2O_df.loc[N2O_df.index[0]])
-    visualize_column(CO2_df.iloc[:, 1], str(CO2_df.columns[1]), str(CO2_df.columns[1]) + " over Time")
-    visualize_column(CO2_df.iloc[:, 2], str(CO2_df.columns[2]), str(CO2_df.columns[2]) + " over Time")
+def merge_df (crops_df, emission_df, drop_columns):
+    #drop data from last 3 years, so that the crop yields and emission df year data matches
+    #1990-2016
+    emission_df.drop(emission_df.tail(3).index,inplace=True)
+    #reset index as column to merge on
+    emission_df = emission_df.reset_index(drop=False)
+    emission_crop_df=pd.merge(crops_df, emission_df, left_index=True, right_index=True)
+    emission_crop_df.drop(columns= drop_columns,inplace=True) 
+    return emission_crop_df
+
+def augment_df(emission_crop_df):
+    #extend the df by a factor to compensate for small data set
+    emission_crop_extended = pd.DataFrame(np.repeat(emission_crop_df.values, FACTOR, axis=0))
+    emission_crop_extended.columns = emission_crop_df.columns
+    #add random Gaussian noise to all entries so that we are not working with exact copies of the data
+    np.random.seed(3)
+    noise = np.random.normal(MU, SIGMA, [emission_crop_extended.shape[0],emission_crop_extended.shape[1]])
+    emission_crop_noisy = emission_crop_extended.astype(float) + noise
+    return emission_crop_noisy
